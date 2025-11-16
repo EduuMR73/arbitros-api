@@ -1,12 +1,12 @@
-# Usa una imagen oficial de OpenJDK 17
+# Etapa 1: Construcción
+FROM eclipse-temurin:17-jdk-jammy AS build
+WORKDIR /app
+COPY . .
+RUN ./gradlew clean build -x test
+
+# Etapa 2: Imagen para producción
 FROM eclipse-temurin:17-jdk-jammy
-
-# Copia el archivo JAR generado a la imagen
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} app.jar
-
-# Expone el puerto por defecto de Spring Boot
+WORKDIR /app
+COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
-
-# Comando para ejecutar la app
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
